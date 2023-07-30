@@ -5,6 +5,20 @@
 Setup
 ------------
 
+* Create app folder 
+```composer create-project symfony/skeleton:"6.3.*" app```
+* ```cd app```
+* ```composer require webapp```
+* Put in your .env.local file 
+  ```
+    MYSQL_PORT=3336
+    MYSQL_PASSWORD=secret
+    MYSQL_DATABASE=docker-php
+    MYSQL_USER=user
+    REDIS_PORT=6389
+    BUILD_TARGET=app_dev
+    DATABASE_URL="mysql://user:secret@db:3306/docker-php?serverVersion=8.0.34&charset=utf8mb4"
+    ```
 * For a standard build / setup, simply run
 ```docker compose up -d ```
 * For a development build which exposes DB ports and includes Xdebug, you can run the dev-mode shell script like so
