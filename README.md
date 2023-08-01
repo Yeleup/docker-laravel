@@ -5,10 +5,8 @@
 Setup
 ------------
 
-* Create app folder 
-```composer create-project symfony/skeleton:"6.3.*" app```
-* ```cd app```
-* ```composer require webapp```
+* Composer install with docker
+  ```docker run --rm --interactive --tty -v $(pwd)/app:/app composer install```
 * Put in your .env.local file 
   ```
     MYSQL_PORT=3336
