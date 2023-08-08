@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ApiResource]
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 class Customer
 {
@@ -32,7 +34,7 @@ class Customer
     private ?\DateTimeInterface $last_transaction = null;
 
     #[ORM\ManyToOne(inversedBy: 'customers')]
-    private ?user $user = null;
+    private ?User $user = null;
 
     #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Transaction::class, orphanRemoval: true)]
     private Collection $transactions;
@@ -107,12 +109,12 @@ class Customer
         return $this;
     }
 
-    public function getUser(): ?user
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function setUser(?user $user): static
+    public function setUser(?User $user): static
     {
         $this->user = $user;
 
