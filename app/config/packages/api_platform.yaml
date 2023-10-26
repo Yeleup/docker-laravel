@@ -1,6 +1,12 @@
 api_platform:
-  swagger:
-    api_keys:
-      JWT:
-        name: Authorization
-        type: header
+    allow_plain_identifiers: true
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    patch_formats:
+        json: ['application/merge-patch+json', 'application/json']
+    swagger:
+        versions: [3]
+        api_keys:
+            apiKey:
+                name: Authorization
+                type: header

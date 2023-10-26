@@ -1,0 +1,70 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title customer.name %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <style>
+        .active {
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content_title %}
+    {{ customer.name }} <small>({{ customer.place }})</small>
+{% endblock %}
+
+{% block page_actions %}
+    <a class="me-2" href="{{ link.back }}">{{ lang.back|trans }}</a>
+
+    <a class="btn btn-success" href="{{ link.add }}">
+        {{ lang.add|trans }}
+    </a>
+
+    <a class="btn btn-primary" href="{{ link.edit }}">
+        <span class="btn-label"><i class="action-icon far fa-edit"></i></span>
+    </a>
+{% endblock %}
+
+{% block main %}
+
+    <div class="form-group me-2">
+        <div class="form-widget">
+            <select class="form-control" onchange="location = this.value;">
+                {% for sort in sorts %}
+                    {% if sort.limit == app.request.get('limit') %}
+                        <option selected value="{{ sort.href }}">{{ sort.text }}</option>
+                    {% else %}
+                        <option value="{{ sort.href }}">{{ sort.text }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    {% block page_content %}
+        <table class="datagrid">
+            {% for customer_order in customer_orders %}
+                <tr {% if customer_order.edit %} class="active" onclick="location.href='{{ customer_order.edit }}'" {% endif %}>
+                  <td class="align-middle text-center">
+                      <span class="text-nowrap">{{ customer_order.user ? customer_order.user.username : '' }}</span><br>
+                      <span class="text-nowrap">{{ customer_order.updated ? customer_order.updated|date('Y-m-d') : '' }}</span>
+                  </td>
+                  <td class="align-middle text-center">{{ customer_order.amount }} {% if customer_order.edit %} <icon class="fa fa-edit"></icon> {% endif %}</td>
+                  <td class="align-middle text-center">
+                    {{ customer_order.type ? customer_order.type.title : '' }}</br>
+                    {{ customer_order.payment ? customer_order.payment.title : '' }}
+                  </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="align-middle text-center">{{ customer_order.total }}</td>
+                    <td class="text-center"></td>
+                </tr>
+            {% endfor %}
+        </table>
+{% endblock %}
+{% endblock %}

@@ -1,8 +1,14 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
-    type: attribute
+#index:
+#    path: /
+#    controller: App\Controller\DefaultController::index
 
-api_login_check:
-    path: /api/login_check
+homepage:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::urlRedirectAction
+    defaults:
+        path: /admin
+        permanent: true
+
+admin:
+    path: /admin
+    controller: App\Controller\Admin\DefaultDashboardController::index

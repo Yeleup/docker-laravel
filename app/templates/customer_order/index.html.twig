@@ -1,0 +1,91 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title customer.name %}
+
+{% block content_title %}
+    {{ customer.name }} <small>({{ customer.place }})</small>
+{% endblock %}
+
+{% block page_actions %}
+    <a class="me-2" href="{{ link.back }}">{{ lang.back|trans }}</a>
+
+    <a class="btn btn-success" href="{{ link.add }}">
+        {{ lang.add|trans }}
+    </a>
+
+    <a class="btn btn-primary" href="{{ link.edit }}">
+        <span class="btn-label"><i class="action-icon far fa-edit"></i></span>
+    </a>
+{% endblock %}
+
+{% block main %}
+    <table class="table datagrid">
+        <thead>
+            <tr>
+                <th class="header-for-field-text text-left"><a href="#">{{ lang.user|trans }}</a></th>
+                <th class="header-for-field-text text-left"><a href="#">{{ lang.created|trans }}</a></th>
+                <th class="header-for-field-text text-left"><a href="#">{{ lang.type|trans }}</a></th>
+                <th class="header-for-field-text text-left"><a href="#">{{ lang.payment|trans }}</a></th>
+                <th class="header-for-field-text text-left"><a href="#">{{ lang.amount|trans }}</a></th>
+                <th width="10px">
+                    <span class="sr-only">{{ lang.action|trans }}</span>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for customer_order in customer_orders %}
+            <tr>
+                <td data-th="{{ lang.user|trans }}">{{ customer_order.user ?? customer_order.user.username }}</td>
+                <td data-th="{{ lang.created|trans }}">{{ customer_order.updated ? customer_order.updated|date('Y-m-d H:i:s') : '' }}</td>
+                <td data-th="{{ lang.type|trans }}" class="{{ customer_order.type ? '' : 'd-none d-sm-table-cell' }}">{{ customer_order.type ? customer_order.type.title : '' }}</td>
+                <td data-th="{{ lang.payment|trans }}" class="{{ customer_order.payment ? '' : 'd-none d-sm-table-cell' }}">{{ customer_order.payment ? customer_order.payment.title : '' }}</td>
+                <td data-th="{{ lang.amount|trans }}">{{ customer_order.amount }}</td>
+                <td data-th="{{ lang.action|trans }}">
+                    <div class="dropdown dropdown-actions">
+                        <a class="dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="21" width="21" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
+                            </svg>
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-right" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(0px, 24px);" data-popper-placement="bottom-end">
+                            <a class="dropdown-item action-edit text-info" href="{{ customer_order.edit }}">{{ lang.edit|trans }}</a>
+
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <button class="dropdown-item text-danger" form="delete-form-customer-order-{{ customer_order.id }}">
+                                    <span class="btn-label">{{ lang.delete|trans }}</span>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <form id="delete-form-customer-order-{{ customer_order.id }}" method="post" action="{{ customer_order.delete }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ customer_order.id) }}">
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td class="text-center empty" colspan="5">{{ lang.no_records_found|trans }}</td>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <td class="d-none d-sm-block"></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot class="{{ customer.total ? '' : 'd-none' }}">
+            <tr>
+                <td colspan="4" class="d-none d-sm-table-cell"></td>
+                <td data-th="Долг"><span>{{ customer.total }}</span></td>
+                <td class="d-none d-sm-table-cell"></td>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <td class="d-none d-sm-table-cell"></td>
+                {% endif %}
+            </tr>
+        </tfoot>
+    </table>
+{% endblock %}

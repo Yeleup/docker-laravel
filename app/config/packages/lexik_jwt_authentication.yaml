@@ -1,10 +1,11 @@
 lexik_jwt_authentication:
-    secret_key: '%env(resolve:JWT_SECRET_KEY)%' # required for token creation
-    public_key: '%env(resolve:JWT_PUBLIC_KEY)%' # required for token verification
-    pass_phrase: '%env(JWT_PASSPHRASE)%' # required for token creation
-    token_ttl: 3600 # in seconds, default is 3600
+    secret_key: '%env(resolve:JWT_SECRET_KEY)%'
+    public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
+    pass_phrase: '%env(JWT_PASSPHRASE)%'
 
-    api_platform:
-        check_path: /api/login_check
-        username_path: email
-        password_path: security.credentials.password
+    # token extraction settings
+    token_extractors:
+        # check token in query string parameter
+        query_parameter:
+            enabled: false
+            name:    token

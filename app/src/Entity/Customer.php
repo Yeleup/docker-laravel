@@ -2,42 +2,91 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use App\ApiPlatform\CustomerSearchFilter;
 
-#[ApiResource]
-#[ORM\Entity(repositoryClass: CustomerRepository::class)]
+/**
+ * @ApiResource(
+ *     normalizationContext={"groups"={"customer.read"}},
+ *     denormalizationContext={"groups"={"customer.write"}},
+ *     itemOperations={
+ *          "get",
+ *          "patch"
+ *     },
+ *     collectionOperations={
+ *          "get",
+ *          "post"
+ *     },
+ *     attributes={
+ *          "order"={"place"="ASC"}
+ *     }
+ * )
+ * @ApiFilter(CustomerSearchFilter::class, properties={"search": SearchFilter::STRATEGY_START})
+ * @ApiFilter(OrderFilter::class, properties={"place", "name", "total", "last_transaction"})
+ * @ORM\Entity(repositoryClass=CustomerRepository::class)
+ */
 class Customer
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     * @Groups({"transaction.read", "customer.read"})
+     */
+    private $id;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    /**
+     * @Assert\NotBlank()
+     * @Groups({"transaction.read", "customer.read", "customer.write"})
+     * @ORM\Column(type="string", length=255)
+     */
+    private $name;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $address = null;
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     * @Groups({"transaction.read", "customer.read", "customer.write"})
+     */
+    private $place;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $phone = null;
+    /**
+     * @Groups({"transaction.read", "customer.read", "customer.write"})
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $contact;
 
-    #[ORM\Column(nullable: true)]
-    private ?float $total = null;
+    /**
+     * @Assert\NotBlank()
+     * @Groups({"customer.read","customer.write"})
+     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="customers")
+     */
+    private $market;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $last_transaction = null;
+    /**
+     * @ORM\OneToMany(targetEntity=Transaction::class, mappedBy="customer", cascade={"remove"})
+     * @ApiSubresource()
+     */
+    private $transactions;
 
-    #[ORM\ManyToOne(inversedBy: 'customers')]
-    private ?User $user = null;
+    /**
+     * @Groups({"customer.read"})
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $total;
 
-    #[ORM\OneToMany(mappedBy: 'customer', targetEntity: Transaction::class, orphanRemoval: true)]
-    private Collection $transactions;
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $last_transaction;
 
     public function __construct()
     {
@@ -54,35 +103,83 @@ class Customer
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): self
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getAddress(): ?string
+    public function getPlace(): ?string
     {
-        return $this->address;
+        return $this->place;
     }
 
-    public function setAddress(?string $address): static
+    public function setPlace(?string $place): self
     {
-        $this->address = $address;
+        $this->place = $place;
 
         return $this;
     }
 
-    public function getPhone(): ?string
+    public function getContact(): ?string
     {
-        return $this->phone;
+        return $this->contact;
     }
 
-    public function setPhone(?string $phone): static
+    public function setContact(?string $contact): self
     {
-        $this->phone = $phone;
+        $this->contact = $contact;
 
         return $this;
+    }
+
+    public function getMarket(): ?Market
+    {
+        return $this->market;
+    }
+
+    public function setMarket(?Market $market): self
+    {
+        $this->market = $market;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Transaction[]
+     */
+    public function getTransactions(): Collection
+    {
+        return $this->transactions;
+    }
+
+    public function addTransaction(Transaction $transaction): self
+    {
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions[] = $transaction;
+            $transaction->setCustomer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTransaction(Transaction $transaction): self
+    {
+        if ($this->transactions->removeElement($transaction)) {
+            // set the owning side to null (unless already changed)
+            if ($transaction->getCustomer() === $this) {
+                $transaction->setCustomer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        // TODO: Implement __toString() method.
+        return $this->name;
     }
 
     public function getTotal(): ?float
@@ -90,7 +187,7 @@ class Customer
         return $this->total;
     }
 
-    public function setTotal(?float $total): static
+    public function setTotal(?float $total): self
     {
         $this->total = $total;
 
@@ -102,51 +199,9 @@ class Customer
         return $this->last_transaction;
     }
 
-    public function setLastTransaction(?\DateTimeInterface $last_transaction): static
+    public function setLastTransaction(?\DateTimeInterface $last_transaction): self
     {
         $this->last_transaction = $last_transaction;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): static
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Transaction>
-     */
-    public function getTransactions(): Collection
-    {
-        return $this->transactions;
-    }
-
-    public function addTransaction(Transaction $transaction): static
-    {
-        if (!$this->transactions->contains($transaction)) {
-            $this->transactions->add($transaction);
-            $transaction->setCustomer($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTransaction(Transaction $transaction): static
-    {
-        if ($this->transactions->removeElement($transaction)) {
-            // set the owning side to null (unless already changed)
-            if ($transaction->getCustomer() === $this) {
-                $transaction->setCustomer(null);
-            }
-        }
 
         return $this;
     }

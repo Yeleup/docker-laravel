@@ -1,0 +1,69 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{#{% use 'bootstrap_4_layout.html.twig' %}#}
+
+    {% block head_javascript %}
+        <script src="{{ asset('js/jquery/jquery-3.6.1.min.js') }}"></script>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                $(document).ready(function() {
+                    types = {{ data.types|json_encode|raw }};
+
+                    $('#customer_order_type').change(function (e) {
+                        for (type of types) {
+                            if ($(this).val() == type.id) {
+                                if (!type.payment_status) {
+                                    $('#customer_order_payment').parent().parent().hide();
+                                } else {
+                                    $('#customer_order_payment').parent().parent().show();
+                                }
+                            }
+                        }
+                    });
+
+                    $('#customer_order_type').trigger("change");
+
+                    $("#form_customer_order_edit").submit(function () {
+                        $('button[form=form_customer_order_edit]').attr('disabled', true);
+                        $('button[form=form_customer_order_edit]').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...');
+                    });
+                });
+            });
+        </script>
+    {% endblock head_javascript %}
+
+{{ form_start(form, {'attr': {'id': 'form_customer_order_edit'}}) }}
+<div class="content-panel-body without-footer">
+
+    <div class="field-text form-group">
+        {{ form_label(form.amount) }}
+        <div class="form-widget">
+            {{ form_widget(form.amount) }}
+        </div>
+    </div>
+
+    <div class="field-text form-group">
+        {{ form_label(form.type) }}
+        <div class="form-widget">
+            {{ form_widget(form.type) }}
+        </div>
+    </div>
+
+    <div class="field-text form-group">
+        {{ form_label(form.payment) }}
+        <div class="form-widget">
+            {{ form_widget(form.payment) }}
+        </div>
+    </div>
+
+
+    {% if form.updated is defined %}
+    <div class="field-text form-group">
+        {{ form_label(form.updated) }}
+        <div class="form-widget">
+            {{ form_widget(form.updated) }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{{ form_end(form) }}

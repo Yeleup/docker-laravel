@@ -2,48 +2,82 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource]
-#[ORM\Entity(repositoryClass: UserRepository::class)]
+/**
+ * @ApiResource(
+ *     attributes={"pagination_enabled"=false},
+ *     collectionOperations={
+ *      "get_current_user"={"method"="GET","route_name"="api_get_current_user"}
+ *     }
+ * )
+ * @ORM\Entity(repositoryClass=UserRepository::class)
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private $id;
 
-    #[ORM\Column(length: 180, unique: true)]
-    private ?string $email = null;
+    /**
+     * @ORM\Column(type="string", length=180, unique=true)
+     */
+    private $username;
 
-    #[ORM\Column]
-    private array $roles = [];
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
 
     /**
      * @var string The hashed password
+     *
+     * @ORM\Column(type="string")
      */
-    #[ORM\Column]
-    private ?string $password = null;
+    private $password;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Transaction::class)]
-    private Collection $transactions;
+    private $plainPassword = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Customer::class)]
-    private Collection $customers;
+    /**
+     * @ORM\ManyToMany(targetEntity=Market::class, inversedBy="users", cascade={"persist"})
+     */
+    private $markets;
 
-    #[ORM\ManyToOne]
-    private ?Organization $organization = null;
+    /**
+     * @ORM\ManyToMany(targetEntity=Payment::class, inversedBy="users")
+     */
+    private $payments;
+
+    /**
+     * @ORM\Column(type="string", length=180, name="full_name", nullable=true)
+     * @Groups({"transaction.read"})
+     */
+    private $fullName;
 
     public function __construct()
     {
-        $this->transactions = new ArrayCollection();
-        $this->customers = new ArrayCollection();
+        $this->markets = new ArrayCollection();
+        $this->payments = new ArrayCollection();
+    }
+
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(string $password): void
+    {
+        $this->plainPassword = $password;
     }
 
     public function getId(): ?int
@@ -51,26 +85,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
     /**
      * A visual identifier that represents this user.
      *
      * @see UserInterface
      */
-    public function getUserIdentifier(): string
+    public function getUsername(): string
     {
-        return (string) $this->email;
+        return (string) $this->username;
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
+
+        return $this;
     }
 
     /**
@@ -80,12 +109,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        // $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): static
+    public function setRoles(array $roles): self
     {
         $this->roles = $roles;
 
@@ -93,14 +122,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @see PasswordAuthenticatedUserInterface
+     * @see UserInterface
      */
     public function getPassword(): string
     {
-        return $this->password;
+        return (string) $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(string $password): self
     {
         $this->password = $password;
 
@@ -110,80 +139,86 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials(): void
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
     }
 
-    /**
-     * @return Collection<int, Transaction>
-     */
-    public function getTransactions(): Collection
+    public function __toString(): string
     {
-        return $this->transactions;
-    }
-
-    public function addTransaction(Transaction $transaction): static
-    {
-        if (!$this->transactions->contains($transaction)) {
-            $this->transactions->add($transaction);
-            $transaction->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTransaction(Transaction $transaction): static
-    {
-        if ($this->transactions->removeElement($transaction)) {
-            // set the owning side to null (unless already changed)
-            if ($transaction->getUser() === $this) {
-                $transaction->setUser(null);
-            }
-        }
-
-        return $this;
+        return $this->username;
     }
 
     /**
-     * @return Collection<int, Customer>
+     * @return Collection|Market[]
      */
-    public function getCustomers(): Collection
+    public function getMarkets(): Collection
     {
-        return $this->customers;
+        return $this->markets;
     }
 
-    public function addCustomer(Customer $customer): static
+    public function addMarket(Market $market): self
     {
-        if (!$this->customers->contains($customer)) {
-            $this->customers->add($customer);
-            $customer->setUser($this);
+        if (!$this->markets->contains($market)) {
+            $this->markets[] = $market;
         }
 
         return $this;
     }
 
-    public function removeCustomer(Customer $customer): static
+    public function removeMarket(Market $market): self
     {
-        if ($this->customers->removeElement($customer)) {
-            // set the owning side to null (unless already changed)
-            if ($customer->getUser() === $this) {
-                $customer->setUser(null);
-            }
+        $this->markets->removeElement($market);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Payment[]
+     */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
+    }
+
+    public function addPayment(Payment $payment): self
+    {
+        if (!$this->payments->contains($payment)) {
+            $this->payments[] = $payment;
         }
 
         return $this;
     }
 
-    public function getOrganization(): ?Organization
+    public function removePayment(Payment $payment): self
     {
-        return $this->organization;
+        $this->payments->removeElement($payment);
+
+        return $this;
     }
 
-    public function setOrganization(?Organization $organization): static
+    public function getUserIdentifier(): string
     {
-        $this->organization = $organization;
+        return (string) $this->username;
+    }
+
+    public function getFullName(): string
+    {
+        return (string) $this->fullName;
+    }
+
+    public function setFullName(string $fullName): self
+    {
+        $this->fullName = $fullName;
 
         return $this;
     }
