@@ -1,6 +1,6 @@
-# Docker - PHP
+# Дневник денежных долгов
 
-[Docker PHP][1] is a **Docker and PHP** repository which accompanies [a YouTube tutorial][2].
+CRM для показа денежных долгов клиентов. Данный сервис реализован для показа своих навыков по работе с **Symfony 5**, **Easyadmin 3**, **API Platform**
 
 Setup
 ------------
@@ -12,13 +12,14 @@ Setup
   ```
 * Put in your .env.local file 
   ```
+    APP_PORT=8300
     MYSQL_PORT=3336
     MYSQL_PASSWORD=secret
     MYSQL_DATABASE=docker-php
     MYSQL_USER=user
     REDIS_PORT=6389
     BUILD_TARGET=app_dev
-    DATABASE_URL="mysql://user:secret@db:3306/docker-php?serverVersion=8.0.34&charset=utf8mb4"
+    DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}?serverVersion=8.0.34&charset=utf8mb4"
     ```
 * For a standard build / setup, simply run
 ```docker compose up -d ```
