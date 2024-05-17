@@ -8,7 +8,6 @@ Setup
 * Composer install with docker
   ```
   docker run --rm --interactive --tty -v $(pwd)/app:/app composer install
-  sudo chown -R 1000:1000 ./app
   ```
 * Put in your .env.local file 
   ```

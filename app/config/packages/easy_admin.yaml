@@ -1,6 +1,0 @@
-#easy_admin:
-#  entities:
-#    Customer:
-#      list:
-#        fields:
-#          - {property: market, permission: 'ROLE_ADMIN'}

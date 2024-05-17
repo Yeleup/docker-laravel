@@ -74,5 +74,5 @@ COPY ./php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 RUN set -eux; \
 	install-php-extensions xdebug
 
-RUN curl -sS https://get.symfony.com/cli/installer | bash
-RUN mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
+#RUN curl -sS https://get.symfony.com/cli/installer | bash
+#RUN mv /root/.symfony*/bin/symfony /usr/local/bin/symfony
