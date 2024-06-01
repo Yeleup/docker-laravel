@@ -1,14 +1,20 @@
-# Дневник денежных долгов
+# Docker for symfony
 
-CRM для показа денежных долгов клиентов. Данный сервис реализован для показа своих навыков по работе с **Symfony 5**, **Easyadmin 3**, **API Platform**
+Our Docker PHP project is a simple, yet powerful, Docker setup for PHP development. It is based on the official PHP Docker image and is designed to be used with Symfony.
 
 Setup
 ------------
+
+* Clone the submodule in the root of the project
+  ```
+  git clone --recurse-submodules -j8 <symfony-repo> app
+  ```
 
 * Composer install with docker
   ```
   docker run --rm --interactive --tty -v $(pwd)/app:/app composer install
   ```
+  
 * Put in your .env.local file 
   ```
     APP_PORT=8300
@@ -24,6 +30,8 @@ Setup
 ```docker compose up -d ```
 * For a development build which exposes DB ports and includes Xdebug, you can run the dev-mode shell script like so
 ```sh ./bin/dev-mode.sh -d```
+* For first time setup, run
+  ```sh ./bin/dev-mode.sh -d --build```
 * To run with Xdebug enabled, run 
 ```XDEBUG_MODE=debug sh ./bin/dev-mode.sh -d --build```
 
