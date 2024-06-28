@@ -1,5 +1,5 @@
 # /php/Dockerfile
-FROM php:8.2-fpm-alpine as app
+FROM php:8.2.19-fpm-alpine as app
 
 # Useful PHP extension installer image, copy binary into your container
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
