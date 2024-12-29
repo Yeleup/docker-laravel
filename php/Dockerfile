@@ -57,6 +57,9 @@ COPY ./app .
 # run composer dump-autoload --optimize
 RUN composer dump-autoload --optimize
 
+## Copy php.ini config file into container
+COPY ./php/conf.d/php.ini /usr/local/etc/php/conf.d/php.ini
+
 # Dev image
 # This stage is meant to be target-built into a separate image
 # https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
