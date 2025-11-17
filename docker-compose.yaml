@@ -13,7 +13,7 @@ services:
             dockerfile: ./php/Dockerfile
             target: "${BUILD_TARGET:-app}"
         volumes:
-            - ./app:/var/www/html
+            - ./backend:/var/www/html
             - ./php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini:ro
         environment:
             MYSQL_HOST: db
