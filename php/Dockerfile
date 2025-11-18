@@ -41,6 +41,8 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 # https://docs.docker.com/build/building/multi-stage/
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+WORKDIR /var/www/html
+
 #Here, we are copying only composer.json and composer.lock (instead of copying the entire source)
 # right before doing composer install.
 # This is enough to take advantage of docker cache and composer install will

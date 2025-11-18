@@ -5,7 +5,7 @@ Our Docker PHP project is a simple, yet powerful, Docker setup for PHP developme
 Setup
 ------------
 
-1. Clone the submodule in the root of the project ```git clone --recurse-submodules -j8 <laravel-repo> app```
+1. Clone the submodule in the root of the project ```git clone --recurse-submodules -j8 <laravel-repo> backend```
 
 2. Put in your .env file
      ```
@@ -14,7 +14,7 @@ Setup
        MYSQL_PASSWORD=${DB_PASSWORD}
        MYSQL_DATABASE=${DB_DATABASE}
        MYSQL_USER=${DB_USERNAME}
-       BUILD_TARGET=app_dev
+       BUILD_TARGET=app
      ```
 
 3. For a development build which exposes DB ports and includes Xdebug, you can run the dev-mode shell script like so ```sh ./bin/dev-mode.sh -d```
@@ -22,7 +22,7 @@ Setup
    * To run with Xdebug enabled, run ```XDEBUG_MODE=debug sh ./bin/dev-mode.sh -d --build```
    
 4. Composer install with docker
-   * ```docker run --rm --interactive --tty -v $(pwd)/app:/app composer install``` or
+   * ```docker run --rm --interactive --tty -v $(pwd)/backend:/backend composer install``` or
    * ```docker exec -it <container_id> composer install```
 
-> **_INFO:_**  Sometimes we need to change the permissions of the storage folder. To do this, run the following command: ``chmod -R 777 app/storage/``
+> **_INFO:_**  Sometimes we need to change the permissions of the storage folder. To do this, run the following command: ``chmod -R 777 backend/storage/``
